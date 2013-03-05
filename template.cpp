@@ -28,3 +28,5 @@
 #define ZERO(X) memset(X,0,sizeof(X))
 
 typedef long long LL;
+
+using namespace std;
