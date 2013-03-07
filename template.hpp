@@ -26,6 +26,8 @@
 #define mp make_pair
 
 #define ZERO(X) memset(X,0,sizeof(X))
+#define FILL(X,i) memset(X,i,sizeof(X))
+#define ALL(X) X.begin(),X.end()
 
 typedef long long LL;
 
