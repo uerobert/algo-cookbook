@@ -28,11 +28,11 @@ struct MCMF {
         fill(ALL(pi), -1);
         fill(ALL(dist), INF); dist[source] = 0;
         expand[source] = INF;
-        priority_queue<pair<LL, int>, vector<pair<LL, int> >, greater<pair<LL, int> > > pq;
+        priority_queue<pair<LL, int> > pq;
         pq.push(mp(0, source));
         while (!pq.empty()) {
             pair<LL, int> front = pq.top(); pq.pop();
-            LL d = front.first, u = front.second;
+            LL d = -front.first, u = front.second;
             if (d == dist[u]) {
                 for (int i = 0; i < (int) adjList[u].size(); i++) {
                     int id = adjList[u][i], to = edgeList[id].v;
@@ -41,17 +41,15 @@ struct MCMF {
                         dist[to] = dist[u] + cost;
                         pi[to] = id;
                         expand[to] = min(expand[u], edgeList[id].cap - edgeList[id].flow);
-                        pq.push(mp(dist[to], to));
+                        pq.push(mp(-dist[to], to));
                     }
                 }
             }
         }
         if (pi[sink] == -1) return 0;
-        int k = pi[sink];
-        while (k != -1) {
+        for (int k = pi[sink]; k != -1; k = pi[edgeList[k].u]) {
             edgeList[k].flow += expand[sink];
             edgeList[k^1].flow -= expand[sink];
-            k = pi[edgeList[k].u];
         }
         return dist[sink] * expand[sink];
     }
