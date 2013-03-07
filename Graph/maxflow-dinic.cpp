@@ -16,23 +16,18 @@ struct Dinic {
         pi.resize(N);
     }
     
-    void AddEdge(int u, int v, long long cap) {
+    void AddEdge(int u, int v, LL cap) {
         Edge f = { u, v, cap, 0 }, b = { v, u, 0, 0 };
-        adjList[u].pb((int) edgeList.size());
-        edgeList.pb(f);
-        adjList[v].pb((int) edgeList.size());
-        edgeList.pb(b);
+        adjList[u].pb((int) edgeList.size()); edgeList.pb(f);
+        adjList[v].pb((int) edgeList.size()); edgeList.pb(b);
     }
     
     LL BlockingFlow(int source, int sink) {
-        queue<int> q;
-        q.push(source);
-        fill(ALL(depth), -1);
-        depth[source] = 0;
-        while (!q.empty() && depth[sink] == -1) {
-            int u = q.front();
-            q.pop();
-            for (int i = 0; i < adjList[u].size(); i++) {
+        queue<int> q; q.push(source);
+        fill(ALL(depth), -1); depth[source] = 0;
+        while (!q.empty()) {
+            int u = q.front(); q.pop();
+            for (int i = 0; i < (int) adjList[u].size(); i++) {
                 int id = adjList[u][i], to = edgeList[id].v;
                 if (depth[to] == -1 && edgeList[id].flow < edgeList[id].cap) {
                     q.push(to);
@@ -54,7 +49,7 @@ struct Dinic {
         for (; pi[u] < (int) adjList[u].size(); ++pi[u]) {
             int id = adjList[u][pi[u]], to = edgeList[id].v;
             if (depth[to] != depth[u] + 1) continue;
-            long long res = edgeList[id].cap - edgeList[id].flow,
+            LL res = edgeList[id].cap - edgeList[id].flow,
                 pushed = Push(to, min(flow, res), sink);
             if (pushed) {
                 edgeList[id].flow += pushed;
@@ -66,10 +61,11 @@ struct Dinic {
     }
     
     LL Maxflow(int source, int sink) {
+        for (int i = 0; i < (int) edgeList.size(); i++)
+            edgeList[i].flow = 0;
         LL totalFlow = 0;
-        while (LL flow = BlockingFlow(source, sink)) {
+        while (LL flow = BlockingFlow(source, sink))
             totalFlow += flow;
-        }
         return totalFlow;
     }
 };
