@@ -40,6 +40,7 @@ struct Dinic {
                 }
             }
         }
+        if (depth[sink] == -1) return 0;
         fill(ALL(pi), 0);
         LL flow = 0;
         while (LL pushed = Push(source, INF, sink))
