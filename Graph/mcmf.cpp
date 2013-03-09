@@ -1,15 +1,18 @@
 #include "../template.hpp"
 
+template <typename Cap = LL, typename Cost = LL> 
 struct MCMF {
     struct Edge {
         int u, v;
-        LL cap, cost, flow;
+        Cap cap, flow;
+        Cost cost;
     };
     
     vector<Edge> edgeList;
     vector<vector<int> > adjList;
     vector<int> pi;
-    vector<LL> dist, expand;
+    vector<Cost> dist;
+    vector<Cap> expand;
     
     MCMF(int N) {
         adjList.resize(N);
@@ -18,48 +21,49 @@ struct MCMF {
         pi.resize(N);
     }
     
-    void AddEdge(int u, int v, LL cap, LL cost) {
-        Edge f = { u, v, cap, cost, 0 }, b = { v, u, 0, -cost, 0 };
+    void AddEdge(int u, int v, Cap cap, Cost cost) {
+        Edge f = { u, v, cap, 0, cost }, b = { v, u, 0, 0, -cost };
         adjList[u].pb((int) edgeList.size()); edgeList.pb(f);
         adjList[v].pb((int) edgeList.size()); edgeList.pb(b);
     }
     
-    LL Dijkstra(int source, int sink) {
+    bool Dijkstra(int source, int sink) {
         fill(ALL(pi), -1);
         fill(ALL(dist), INF); dist[source] = 0;
         expand[source] = INF;
-        priority_queue<pair<LL, int> > pq;
+        priority_queue<pair<Cost, int> > pq;
         pq.push(mp(0, source));
         while (!pq.empty()) {
-            pair<LL, int> front = pq.top(); pq.pop();
-            LL d = -front.first, u = front.second;
-            if (d == dist[u]) {
-                for (int i = 0; i < (int) adjList[u].size(); i++) {
-                    int id = adjList[u][i], to = edgeList[id].v;
-                    LL cost = edgeList[id].cost;
-                    if (dist[u] + cost < dist[to] && edgeList[id].flow < edgeList[id].cap) {
-                        dist[to] = dist[u] + cost;
-                        pi[to] = id;
-                        expand[to] = min(expand[u], edgeList[id].cap - edgeList[id].flow);
-                        pq.push(mp(-dist[to], to));
-                    }
+            pair<Cost, int> front = pq.top(); pq.pop();
+            Cost d = -front.first;
+            int u = front.second;
+            if (d > dist[u]) continue;
+            for (int i = 0; i < (int) adjList[u].size(); i++) {
+                int id = adjList[u][i], to = edgeList[id].v;
+                Cost cost = edgeList[id].cost;
+                if (dist[u] + cost < dist[to] && edgeList[id].flow < edgeList[id].cap) {
+                    dist[to] = dist[u] + cost;
+                    pi[to] = id;
+                    expand[to] = min(expand[u], edgeList[id].cap - edgeList[id].flow);
+                    pq.push(mp(-dist[to], to));
                 }
             }
         }
-        if (pi[sink] == -1) return 0;
+        if (pi[sink] == -1) return false;
         for (int k = pi[sink]; k != -1; k = pi[edgeList[k].u]) {
             edgeList[k].flow += expand[sink];
             edgeList[k^1].flow -= expand[sink];
         }
-        return dist[sink] * expand[sink];
+        return true;
     }
     
-    pair<LL, LL> Get(int source, int sink) {
+    pair<Cap, Cost> Get(int source, int sink) {
         for (int i = 0; i < (int) edgeList.size(); i++)
             edgeList[i].flow = 0;
-        LL totalCost = 0, totalFlow = 0;
-        while (LL cost = Dijkstra(source, sink)) {
-            totalCost += cost;
+        Cost totalCost = 0;
+        Cap totalFlow = 0;
+        while (Dijkstra(source, sink)) {
+            totalCost += dist[sink] * expand[sink];
             totalFlow += expand[sink];
         }
         return mp(totalFlow, totalCost);

@@ -25,7 +25,7 @@ struct Dinic {
     LL BlockingFlow(int source, int sink) {
         queue<int> q; q.push(source);
         fill(ALL(depth), -1); depth[source] = 0;
-        while (!q.empty()) {
+        while (!q.empty() && depth[sink] == -1) {
             int u = q.front(); q.pop();
             for (int i = 0; i < (int) adjList[u].size(); i++) {
                 int id = adjList[u][i], to = edgeList[id].v;
