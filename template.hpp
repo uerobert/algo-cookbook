@@ -25,7 +25,7 @@
 #define pb push_back
 #define mp make_pair
 
-#define ZERO(X) memset(X,0,sizeof(X))
+#define FOR(i,a,b) for(int i=a;i<b;i++)
 #define FILL(X,i) memset(X,i,sizeof(X))
 #define ALL(X) X.begin(),X.end()
 

@@ -1,70 +1,71 @@
 #include "../template.hpp"
 
 struct Dinic {
+    
     struct Edge {
         int u, v;
         LL cap, flow;
     };
     
-    vector<Edge> edgeList;
-    vector<vector<int> > adjList;
-    vector<int> depth, pi;
+    vector<Edge> edges;
+    vector<vector<int> > adjlist;
+    vector<int> d, p;
     
     Dinic(int N) {
-        adjList.resize(N);
-        depth.resize(N);
-        pi.resize(N);
+        adjlist.resize(N);
+        d.resize(N);
+        p.resize(N);
     }
     
     void AddEdge(int u, int v, LL cap) {
         Edge f = { u, v, cap, 0 }, b = { v, u, 0, 0 };
-        adjList[u].pb((int) edgeList.size()); edgeList.pb(f);
-        adjList[v].pb((int) edgeList.size()); edgeList.pb(b);
+        adjlist[u].pb((int) edges.size()); edges.pb(f);
+        adjlist[v].pb((int) edges.size()); edges.pb(b);
     }
     
-    LL BlockingFlow(int source, int sink) {
-        queue<int> q; q.push(source);
-        fill(ALL(depth), -1); depth[source] = 0;
-        while (!q.empty() && depth[sink] == -1) {
+    LL BlockingFlow(int s, int t) {
+        queue<int> q; q.push(s);
+        fill(ALL(d), -1); d[s] = 0;
+        while (!q.empty() && d[t] == -1) {
             int u = q.front(); q.pop();
-            for (int i = 0; i < (int) adjList[u].size(); i++) {
-                int id = adjList[u][i], to = edgeList[id].v;
-                if (depth[to] == -1 && edgeList[id].flow < edgeList[id].cap) {
+            for (int i = 0; i < (int) adjlist[u].size(); i++) {
+                int id = adjlist[u][i], to = edges[id].v;
+                if (d[to] == -1 && edges[id].flow < edges[id].cap) {
                     q.push(to);
-                    depth[to] = depth[u] + 1;
+                    d[to] = d[u] + 1;
                 }
             }
         }
-        if (depth[sink] == -1) return 0;
-        fill(ALL(pi), 0);
+        if (d[t] == -1) return 0;
+        fill(ALL(p), 0);
         LL flow = 0;
-        while (LL pushed = Push(source, INF, sink))
+        while (LL pushed = Push(s, INF, t))
             flow += pushed;
         return flow;
     }
     
-    LL Push(int u, LL flow, int sink) {
+    LL Push(int u, LL flow, int t) {
         if (!flow) return 0;
-        if (u == sink) return flow;
-        for (; pi[u] < (int) adjList[u].size(); ++pi[u]) {
-            int id = adjList[u][pi[u]], to = edgeList[id].v;
-            if (depth[to] != depth[u] + 1) continue;
-            LL res = edgeList[id].cap - edgeList[id].flow,
-                pushed = Push(to, min(flow, res), sink);
+        if (u == t) return flow;
+        for (; p[u] < (int) adjlist[u].size(); ++p[u]) {
+            int id = adjlist[u][p[u]], to = edges[id].v;
+            if (d[to] != d[u] + 1) continue;
+            LL res = edges[id].cap - edges[id].flow,
+                pushed = Push(to, min(flow, res), t);
             if (pushed) {
-                edgeList[id].flow += pushed;
-                edgeList[id^1].flow -= pushed;
+                edges[id].flow += pushed;
+                edges[id^1].flow -= pushed;
                 return pushed;
             }
         }
         return 0;
     }
     
-    LL Maxflow(int source, int sink) {
-        for (int i = 0; i < (int) edgeList.size(); i++)
-            edgeList[i].flow = 0;
+    LL Maxflow(int s, int t) {
+        for (int i = 0; i < (int) edges.size(); i++)
+            edges[i].flow = 0;
         LL totalFlow = 0;
-        while (LL flow = BlockingFlow(source, sink))
+        while (LL flow = BlockingFlow(s, t))
             totalFlow += flow;
         return totalFlow;
     }
